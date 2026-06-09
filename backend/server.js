@@ -17,6 +17,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const REVIEWS_FILE = path.join(DATA_DIR, 'reviews.json');
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -29,6 +30,9 @@ if (!fs.existsSync(ORDERS_FILE)) {
 }
 if (!fs.existsSync(USERS_FILE)) {
   fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2));
+}
+if (!fs.existsSync(REVIEWS_FILE)) {
+  fs.writeFileSync(REVIEWS_FILE, JSON.stringify([], null, 2));
 }
 
 app.get('/health', (req, res) => {
@@ -213,6 +217,30 @@ app.delete('/api/orders/:id', (req, res) => {
   } else {
     res.status(404).json({ error: 'Order not found' });
   }
+});
+
+// Reviews Endpoints
+app.get('/api/reviews', (req, res) => {
+  const reviews = JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
+  res.json(reviews);
+});
+
+app.post('/api/reviews', (req, res) => {
+  const { username, rating, comment } = req.body;
+  if (!username || !rating || !comment) {
+    return res.status(400).json({ error: 'Username, rating, and comment are required' });
+  }
+  const reviews = JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
+  const newReview = {
+    id: reviews.length + 1,
+    username,
+    rating: parseInt(rating, 10),
+    comment,
+    createdAt: new Date().toISOString()
+  };
+  reviews.push(newReview);
+  fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviews, null, 2));
+  res.json(newReview);
 });
 
 // User Auth Endpoints

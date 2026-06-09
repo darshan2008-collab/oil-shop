@@ -1,16 +1,55 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, Droplets, Heart, Truck, Shield, Headphones, ArrowRight } from 'lucide-react';
+import { Leaf, Droplets, Heart, Truck, Shield, Headphones, ArrowRight, Star } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
     fetch('/api/products')
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(err => console.error('Error fetching products:', err));
+
+    fetch('/api/reviews')
+      .then(res => res.json())
+      .then(data => setReviews(data))
+      .catch(err => console.error('Error fetching reviews:', err));
   }, []);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!newReview.comment.trim()) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: user.username,
+          rating: newReview.rating,
+          comment: newReview.comment,
+        }),
+      });
+      if (response.ok) {
+        const addedReview = await response.json();
+        setReviews(prevReviews => [...prevReviews, addedReview]);
+        setNewReview({ rating: 5, comment: '' });
+      }
+    } catch (err) {
+      console.error('Error submitting review:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="font-sans bg-cream text-gray-800 overflow-x-hidden">
@@ -287,6 +326,165 @@ const Home = () => {
                   Have questions? Talk to our oil experts anytime.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Customer Reviews Section */}
+      <section className="py-16 md:py-24 bg-cream border-t border-gray-100">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center space-y-3 mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold font-serif text-primary">
+              Customer Reviews
+            </h2>
+            <div className="flex items-center justify-center space-x-2">
+              <span className="h-[1px] w-12 bg-accent"></span>
+              <span className="text-accent text-lg">⭐</span>
+              <span className="h-[1px] w-12 bg-accent"></span>
+            </div>
+            <p className="text-sm sm:text-base text-gray-600 font-light max-w-xl mx-auto">
+              Real feedback from our customers who choose purity and health for their family.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Reviews List */}
+            <div className="lg:col-span-2 space-y-6">
+              {reviews.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-3xl border border-gray-100/50 shadow-sm max-w-md mx-auto space-y-4">
+                  <div className="text-4xl">🌱</div>
+                  <h3 className="text-xl font-bold font-serif text-primary">No reviews yet</h3>
+                  <p className="text-gray-500 font-light text-sm max-w-xs mx-auto">
+                    Be the first to share your experience with our premium wood-pressed cooking oils!
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {reviews.map((rev) => (
+                    <div 
+                      key={rev.id} 
+                      className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition duration-300 space-y-4 flex flex-col justify-between"
+                    >
+                      <div className="space-y-2">
+                        {/* Rating Stars */}
+                        <div className="flex items-center space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`w-4 h-4 ${i < rev.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`} 
+                            />
+                          ))}
+                        </div>
+                        {/* Comment */}
+                        <p className="text-gray-700 text-sm font-light leading-relaxed italic">
+                          "{rev.comment}"
+                        </p>
+                      </div>
+                      
+                      {/* Reviewer Info */}
+                      <div className="flex items-center space-x-3 pt-3 border-t border-gray-50">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs flex-shrink-0">
+                          {rev.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-xs text-gray-800 truncate">{rev.username}</h4>
+                          <p className="text-[10px] text-gray-400">
+                            {new Date(rev.createdAt).toLocaleDateString('en-IN', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Submission Form / Call to Action */}
+            <div className="bg-white rounded-3xl border border-gray-100 p-6 md:p-8 shadow-sm">
+              {user ? (
+                <form onSubmit={handleReviewSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <h3 className="text-lg sm:text-xl font-bold font-serif text-primary">Write a Review</h3>
+                    <p className="text-xs text-gray-500 font-light">Share your honest feedback about our oils.</p>
+                  </div>
+
+                  {/* Interactive Rating Stars */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Your Rating
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      {[1, 2, 3, 4, 5].map((starVal) => {
+                        const isGold = hoverRating ? starVal <= hoverRating : starVal <= newReview.rating;
+                        return (
+                          <button
+                            type="button"
+                            key={starVal}
+                            onClick={() => setNewReview({ ...newReview, rating: starVal })}
+                            onMouseEnter={() => setHoverRating(starVal)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            className="p-1 hover:scale-110 transition cursor-pointer"
+                            aria-label={`Rate ${starVal} stars`}
+                          >
+                            <Star 
+                              className={`w-6 h-6 ${isGold ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`} 
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Comment Textarea */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Your Review
+                    </label>
+                    <textarea
+                      rows="4"
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                      required
+                      placeholder="What did you think of the taste, aroma, and quality?"
+                      className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition focus:outline-none bg-cream/35 resize-none placeholder-gray-400 font-light"
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={submitting || !newReview.comment.trim()}
+                    className="w-full bg-primary hover:bg-primaryDark disabled:bg-primary/50 text-white py-3 rounded-xl font-semibold transition duration-300 shadow-md text-xs sm:text-sm flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    {submitting ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <span>Submit Review</span>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                <div className="space-y-4 text-center py-6">
+                  <div className="w-12 h-12 bg-creamDark rounded-full flex items-center justify-center mx-auto text-accent border border-accent/10">
+                    <Star className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-md sm:text-lg font-bold font-serif text-primary">Share your experience</h3>
+                  <p className="text-xs text-gray-500 font-light max-w-xs mx-auto leading-relaxed">
+                    Have you tried our wood pressed oils? Sign in to submit your rating and review.
+                  </p>
+                  <Link 
+                    to="/login" 
+                    className="inline-block w-full bg-primary hover:bg-primaryDark text-white py-3 rounded-xl font-semibold transition duration-300 shadow-md text-xs"
+                  >
+                    Sign In to Write a Review
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
