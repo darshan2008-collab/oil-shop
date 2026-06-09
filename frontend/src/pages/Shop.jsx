@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
@@ -15,6 +20,11 @@ const Shop = () => {
   }, []);
 
   const handleAddToCart = (product) => {
+    if (!user) {
+      alert(`Please sign in to add ${product.name} to your cart.`);
+      navigate('/login', { state: { from: location } });
+      return;
+    }
     addToCart(product);
     alert(`${product.name} added to cart!`);
   };

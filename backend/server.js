@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 // Data files
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -25,6 +26,9 @@ if (!fs.existsSync(DATA_DIR)) {
 // Initialize data files if they don't exist
 if (!fs.existsSync(ORDERS_FILE)) {
   fs.writeFileSync(ORDERS_FILE, JSON.stringify([], null, 2));
+}
+if (!fs.existsSync(USERS_FILE)) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2));
 }
 
 app.get('/health', (req, res) => {
@@ -209,6 +213,53 @@ app.delete('/api/orders/:id', (req, res) => {
   } else {
     res.status(404).json({ error: 'Order not found' });
   }
+});
+
+// User Auth Endpoints
+
+// Register
+app.post('/api/auth/register', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+  const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  const userExists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
+  if (userExists) {
+    return res.status(400).json({ error: 'Username already exists' });
+  }
+  
+  const obscuredPassword = Buffer.from(password).toString('base64');
+  const newUser = {
+    id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+    username,
+    password: obscuredPassword,
+    createdAt: new Date().toISOString()
+  };
+  users.push(newUser);
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  
+  res.json({ status: 'success', username: newUser.username });
+});
+
+// Login
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+  const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid username or password' });
+  }
+  
+  const obscuredPassword = Buffer.from(password).toString('base64');
+  if (user.password !== obscuredPassword) {
+    return res.status(401).json({ error: 'Invalid username or password' });
+  }
+  
+  res.json({ status: 'success', username: user.username });
 });
 
 app.listen(PORT, () => {

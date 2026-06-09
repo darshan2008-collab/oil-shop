@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const { cartCount } = useCart();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -23,7 +25,6 @@ const Header = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
-    { name: 'About Us', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -104,6 +105,29 @@ const Header = () => {
                   </span>
                 )}
               </Link>
+
+              {user ? (
+                <div className="hidden sm:flex items-center space-x-2 border-l border-gray-200 pl-3 ml-1">
+                  <div className="flex flex-col text-right">
+                    <span className="text-[11px] font-semibold text-gray-800 leading-none">Hi, {user.username}</span>
+                    <button
+                      onClick={logout}
+                      className="text-[9px] text-accent hover:text-primary transition font-bold uppercase tracking-wider text-left mt-0.5"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center space-x-2 border-l border-gray-200 pl-3 ml-1">
+                  <Link
+                    to="/login"
+                    className="text-xs text-primary hover:text-primaryDark transition font-bold uppercase tracking-wider pl-1"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -158,6 +182,36 @@ const Header = () => {
         
         {/* Fixed Bottom Buttons Area */}
         <div className="mt-auto pt-6 border-t border-gray-100 space-y-3 flex-shrink-0">
+          {user ? (
+            <div className="bg-cream border border-gray-100 p-4 rounded-xl flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                  {user.username.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-gray-800">{user.username}</span>
+                  <span className="text-[10px] text-gray-400">Standard User</span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                }}
+                className="text-xs text-red-600 hover:text-red-800 transition font-bold"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block w-full text-center border border-primary text-primary hover:bg-primary/5 py-2.5 rounded-full font-semibold text-sm transition mb-2"
+            >
+              Sign In
+            </Link>
+          )}
           <Link 
             to="/shop" 
             onClick={() => setIsMenuOpen(false)}
