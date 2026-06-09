@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "Sunflower Oil",
+    "tamilName": "சூரியகாந்தி எண்ணெய்",
+    "price": 450,
+    "description": "Rich in Vitamin E and good for heart health.",
+    "image": "/images/sunflower-oil.png",
+    "category": "cooking"
+  },
+  {
+    "id": 2,
+    "name": "Groundnut Oil",
+    "tamilName": "கடலை எண்ணெய்",
+    "price": 380,
+    "description": "Natural antioxidants and essential nutrients.",
+    "image": "/images/groundnut-oil.png",
+    "category": "cooking"
+  },
+  {
+    "id": 3,
+    "name": "Sesame Oil",
+    "tamilName": "நல்லெண்ணெய்",
+    "price": 520,
+    "description": "Good for bone health and increases immunity.",
+    "image": "/images/sesame-oil.png",
+    "category": "cooking"
+  },
+  {
+    "id": 4,
+    "name": "Coconut Oil",
+    "tamilName": "தேங்காய் எண்ணெய்",
+    "price": 400,
+    "description": "Boosts metabolism and supports healthy living.",
+    "image": "/images/coconut-oil.png",
+    "category": "cooking"
+  },
+  {
+    "id": 5,
+    "name": "Castor Oil",
+    "tamilName": "விளக்கெண்ணெய்",
+    "price": 350,
+    "description": "Good for hair, skin and overall wellness.",
+    "image": "/images/castor-oil.png",
+    "category": "wellness"
+  }
+]
