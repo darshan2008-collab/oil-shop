@@ -4,6 +4,8 @@ import { Lock, User as UserIcon } from 'lucide-react';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const adminUsername = import.meta.env.VITE_ADMIN_USERNAME || 'vijay';
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'vijay@2026';
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -19,7 +21,7 @@ const AdminLogin = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (credentials.username === 'vijay' && credentials.password === 'vijay@2026') {
+    if (credentials.username === adminUsername && credentials.password === adminPassword) {
       localStorage.setItem('isAdminLoggedIn', 'true');
       navigate('/admin');
     } else {
