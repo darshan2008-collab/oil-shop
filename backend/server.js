@@ -5,7 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 5000;
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 
 // Middleware
 app.use(cors());
@@ -13,18 +14,22 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 // Data files
-const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
-const PRODUCTS_FILE = path.join(__dirname, 'data', 'products.json');
+const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 
 // Ensure data directory exists
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-  fs.mkdirSync(path.join(__dirname, 'data'));
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 // Initialize data files if they don't exist
 if (!fs.existsSync(ORDERS_FILE)) {
   fs.writeFileSync(ORDERS_FILE, JSON.stringify([], null, 2));
 }
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', port: PORT });
+});
 
 const translationMap = {
   'sunflower': 'சூரியகாந்தி எண்ணெய்',
@@ -207,5 +212,5 @@ app.delete('/api/orders/:id', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
