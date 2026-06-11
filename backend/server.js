@@ -178,6 +178,18 @@ app.get('/api/orders', (req, res) => {
   res.json(orders);
 });
 
+// Get orders for a specific user
+app.get('/api/orders/user/:username', (req, res) => {
+  const orders = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
+  const username = req.params.username.toLowerCase();
+  const userOrders = orders.filter(o =>
+    (o.username && o.username.toLowerCase() === username) ||
+    (o.customerName && o.customerName.toLowerCase() === username) ||
+    (o.name && o.name.toLowerCase() === username)
+  );
+  res.json(userOrders);
+});
+
 // Get order by ID
 app.get('/api/orders/:id', (req, res) => {
   const orders = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));

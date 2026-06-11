@@ -7,6 +7,7 @@ import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
 import OrderSuccess from './pages/OrderSuccess';
 import Login from './pages/Login';
+import UserDashboard from './pages/UserDashboard';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { CartProvider } from './context/CartContext';
@@ -54,6 +55,11 @@ function App() {
                 <Route path="/order-success/:id" element={
                   <ProtectedRoute>
                     <OrderSuccess />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <UserDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/login" element={<AdminLogin />} />

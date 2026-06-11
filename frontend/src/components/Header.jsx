@@ -93,9 +93,17 @@ const Header = () => {
                 <Search className="w-5 h-5 text-gray-700 hover:text-primary transition" />
               </button>
               
-              <Link to="/admin" className="hidden sm:block p-2 hover:bg-gray-50 rounded-full transition duration-300" aria-label="Admin Dashboard">
-                <User className="w-5 h-5 text-gray-700 hover:text-primary transition" />
-              </Link>
+              {user ? (
+                <Link to="/dashboard" className="hidden sm:block p-2 hover:bg-gray-50 rounded-full transition duration-300 relative" aria-label="My Dashboard">
+                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">
+                    {user.username.charAt(0).toUpperCase()}
+                  </div>
+                </Link>
+              ) : (
+                <Link to="/login" className="hidden sm:block p-2 hover:bg-gray-50 rounded-full transition duration-300" aria-label="Sign In">
+                  <User className="w-5 h-5 text-gray-700 hover:text-primary transition" />
+                </Link>
+              )}
               
               <Link to="/cart" className="p-2 hover:bg-gray-50 rounded-full transition duration-300 relative" aria-label="Cart">
                 <ShoppingCart className="w-5 h-5 text-gray-700 hover:text-primary transition" />
@@ -182,28 +190,28 @@ const Header = () => {
         
         {/* Fixed Bottom Buttons Area */}
         <div className="mt-auto pt-6 border-t border-gray-100 space-y-3 flex-shrink-0">
-          {user ? (
-            <div className="bg-cream border border-gray-100 p-4 rounded-xl flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                  {user.username.charAt(0).toUpperCase()}
+              {user ? (
+              <div className="bg-cream border border-gray-100 p-4 rounded-xl flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                    {user.username.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-800">{user.username}</span>
+                    <span className="text-[10px] text-gray-400">Member</span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-gray-800">{user.username}</span>
-                  <span className="text-[10px] text-gray-400">Standard User</span>
-                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="text-xs text-red-600 hover:text-red-800 transition font-bold"
+                >
+                  Logout
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  logout();
-                  setIsMenuOpen(false);
-                }}
-                className="text-xs text-red-600 hover:text-red-800 transition font-bold"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
+            ) : (
             <Link 
               to="/login" 
               onClick={() => setIsMenuOpen(false)}
@@ -219,13 +227,15 @@ const Header = () => {
           >
             Shop Now
           </Link>
-          <Link 
-            to="/admin" 
-            onClick={() => setIsMenuOpen(false)}
-            className="block w-full text-center border border-gray-200 text-gray-700 hover:bg-gray-50 py-2.5 rounded-full font-medium text-sm transition"
-          >
-            Admin Dashboard
-          </Link>
+          {user && (
+            <Link 
+              to="/dashboard" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block w-full text-center border border-primary text-primary hover:bg-primary/5 py-2.5 rounded-full font-medium text-sm transition"
+            >
+              My Dashboard
+            </Link>
+          )}
         </div>
       </div>
     </>
