@@ -1,6 +1,7 @@
 [
   {
     "id": 1,
+    "username": "darshan",
     "customer": {
       "name": "darshan k",
       "email": "darshan18052008@gmail.com",
@@ -24,9 +25,11 @@
         "quantity": 1
       }
     ],
-    "total": 380,
+    "subtotal": 380,
+    "shippingCharge": 50,
+    "total": 430,
     "status": "pending",
-    "createdAt": "2026-06-11T15:36:32.174Z",
-    "updatedAt": "2026-06-11T15:36:32.174Z"
+    "createdAt": "2026-06-13T17:40:26.218Z",
+    "updatedAt": "2026-06-13T17:41:27.435Z"
   }
 ]

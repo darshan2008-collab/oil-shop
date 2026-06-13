@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 
 const STATUS_CONFIG = {
   pending:    { label: 'Pending',    color: 'bg-amber-100 text-amber-700 border-amber-200',   icon: Clock },
+  confirmed:  { label: 'Confirmed',  color: 'bg-teal-100 text-teal-700 border-teal-200',     icon: CheckCircle },
   processing: { label: 'Processing', color: 'bg-blue-100 text-blue-700 border-blue-200',      icon: Loader },
   shipped:    { label: 'Shipped',    color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: Package },
   delivered:  { label: 'Delivered',  color: 'bg-green-100 text-green-700 border-green-200',   icon: CheckCircle },
@@ -31,6 +32,7 @@ const StatCard = ({ icon: Icon, label, value, sub, accent }) => (
 const OrderTimeline = ({ currentStatus }) => {
   const steps = [
     { key: 'pending', label: 'Order Placed', desc: 'We have received your order' },
+    { key: 'confirmed', label: 'Confirmed', desc: 'Order confirmed & shipping charge set' },
     { key: 'processing', label: 'Processing', desc: 'Preparing your premium oils' },
     { key: 'shipped', label: 'Shipped', desc: 'Your package is on the way' },
     { key: 'delivered', label: 'Delivered', desc: 'Delivered to your doorstep' }
@@ -46,7 +48,7 @@ const OrderTimeline = ({ currentStatus }) => {
     );
   }
 
-  const statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+  const statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
   const currentIndex = statusOrder.indexOf(currentStatus);
 
   return (
@@ -87,7 +89,10 @@ const OrderTimeline = ({ currentStatus }) => {
 const OrderDetailModal = ({ order, onClose, onCancelOrder }) => {
   if (!order) return null;
   const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
-  const total = order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || order.total || 0;
+  
+  const subtotal = order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || order.subtotal || order.total || 0;
+  const shipping = order.shippingCharge !== null && order.shippingCharge !== undefined ? order.shippingCharge : null;
+  const total = shipping !== null ? subtotal + shipping : subtotal;
   
   const deliveryAddress = order.customer?.address || order.address;
   const deliveryCity = order.customer?.city || (order.address?.city || '');
@@ -175,10 +180,31 @@ const OrderDetailModal = ({ order, onClose, onCancelOrder }) => {
             </div>
           </div>
 
-          {/* Total */}
-          <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-            <span className="text-sm font-bold text-gray-500">Total Invoice</span>
-            <span className="text-2xl font-extrabold text-primary">₹{total.toLocaleString('en-IN')}</span>
+          {/* Pricing Breakdown */}
+          <div className="border-t border-gray-100 pt-4 space-y-2.5">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Items Subtotal</span>
+              <span className="font-semibold text-gray-800">₹{subtotal.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 items-center">
+              <span>Shipping Charge</span>
+              {shipping !== null ? (
+                <span className="font-semibold text-gray-800">₹{shipping.toLocaleString('en-IN')}</span>
+              ) : (
+                <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                  Pending admin update
+                </span>
+              )}
+            </div>
+            <div className="border-t border-dashed pt-3 flex justify-between items-center">
+              <div>
+                <span className="text-md font-bold text-gray-800">Total Invoice</span>
+                {shipping === null && (
+                  <p className="text-[10px] text-gray-400">Excluding shipping</p>
+                )}
+              </div>
+              <span className="text-2xl font-extrabold text-primary">₹{total.toLocaleString('en-IN')}</span>
+            </div>
           </div>
 
           {/* Actions */}
@@ -201,7 +227,10 @@ const OrderDetailModal = ({ order, onClose, onCancelOrder }) => {
 const OrderCard = ({ order, onViewDetails }) => {
   const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
   const StatusIcon = status.icon;
-  const total = order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || order.total || 0;
+  
+  const subtotal = order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || order.subtotal || order.total || 0;
+  const shipping = order.shippingCharge || 0;
+  const total = order.total || (subtotal + shipping);
 
   const deliveryAddress = order.customer?.address || order.address;
   const deliveryCity = order.customer?.city || (order.address?.city || '');
@@ -243,7 +272,14 @@ const OrderCard = ({ order, onViewDetails }) => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-400">Total Amount</p>
-            <p className="text-base font-bold text-primary">₹{total.toLocaleString('en-IN')}</p>
+            <p className="text-base font-bold text-primary">
+              ₹{total.toLocaleString('en-IN')}
+              {order.shippingCharge === null && (
+                <span className="text-[10px] font-semibold text-amber-600 block leading-tight">
+                  + Shipping pending
+                </span>
+              )}
+            </p>
           </div>
           {deliveryAddress && (
             <div className="text-right">

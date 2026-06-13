@@ -47,7 +47,7 @@ ${formData.city}, ${formData.state} - ${formData.zipCode}
 🧴 *Ordered Products*
 ${itemsList}
 
-💰 *Total Amount: ₹${cartTotal}*
+💰 *Total Product Amount: ₹${cartTotal} (Shipping to be calculated by Admin)*
 💳 Payment: ${formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
 
 📅 Date: ${new Date().toLocaleString('en-IN')}`;
@@ -63,6 +63,8 @@ ${itemsList}
       username: user?.username || '',
       customer: formData,
       items: cart,
+      subtotal: cartTotal,
+      shippingCharge: null,
       total: cartTotal
     };
 
@@ -301,6 +303,16 @@ ${itemsList}
                 )}
               </div>
 
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-xs sm:text-sm space-y-1">
+                <p className="font-bold flex items-center">
+                  <span className="text-amber-500 mr-1.5 text-base">⚠️</span>
+                  Shipping cost is calculated after order placement
+                </p>
+                <p className="text-gray-600">
+                  Our admin will review your address and update the shipping cost according to your area. You will pay for shipping upon delivery.
+                </p>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -343,10 +355,13 @@ ${itemsList}
                 </div>
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Shipping</span>
-                  <span className="font-semibold text-green-600 uppercase">Free</span>
+                  <span className="font-semibold text-amber-600">Calculated after order</span>
                 </div>
                 <div className="border-t pt-3 flex justify-between items-center">
-                  <span className="text-md font-bold text-gray-800">Total</span>
+                  <div>
+                    <span className="text-md font-bold text-gray-800">Total</span>
+                    <p className="text-[10px] text-gray-400">Excluding shipping</p>
+                  </div>
                   <span className="text-2xl font-extrabold text-primary">₹{cartTotal}</span>
                 </div>
               </div>

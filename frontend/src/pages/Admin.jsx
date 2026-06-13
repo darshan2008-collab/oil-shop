@@ -275,7 +275,9 @@ const Admin = () => {
   const stats = {
     total: orders.length,
     pending: orders.filter(o => o.status === 'pending').length,
+    confirmed: orders.filter(o => o.status === 'confirmed').length,
     processing: orders.filter(o => o.status === 'processing').length,
+    shipped: orders.filter(o => o.status === 'shipped').length,
     delivered: orders.filter(o => o.status === 'delivered').length,
     cancelled: orders.filter(o => o.status === 'cancelled').length,
     revenue: orders
@@ -286,7 +288,9 @@ const Admin = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+      case 'confirmed': return 'bg-teal-50 border-teal-200 text-teal-800';
       case 'processing': return 'bg-blue-50 border-blue-200 text-blue-800';
+      case 'shipped': return 'bg-indigo-50 border-indigo-200 text-indigo-800';
       case 'delivered': return 'bg-green-50 border-green-200 text-green-800';
       case 'cancelled': return 'bg-red-50 border-red-200 text-red-800';
       default: return 'bg-gray-50 border-gray-200 text-gray-800';
@@ -296,7 +300,9 @@ const Admin = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'pending': return <Clock className="w-3.5 h-3.5" />;
+      case 'confirmed': return <CheckCircle className="w-3.5 h-3.5" />;
       case 'processing': return <RefreshCw className="w-3.5 h-3.5 animate-spin" />;
+      case 'shipped': return <Package className="w-3.5 h-3.5" />;
       case 'delivered': return <CheckCircle className="w-3.5 h-3.5" />;
       case 'cancelled': return <XCircle className="w-3.5 h-3.5" />;
       default: return null;
@@ -368,63 +374,87 @@ const Admin = () => {
         {activeTab === 'orders' ? (
           <>
             {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Total Orders</p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-primary mt-1 sm:mt-2">{stats.total}</p>
-              </div>
-              <div className="p-3 bg-primary/5 rounded-2xl text-primary">
-                <ShoppingBag className="w-6 h-6" />
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-sm">
+            <div className="flex flex-col h-full justify-between">
+              <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Total Orders</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-primary">{stats.total}</p>
+                <div className="p-1.5 bg-primary/5 rounded-xl text-primary">
+                  <ShoppingBag className="w-4 h-4" />
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Pending</p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-yellow-600 mt-1 sm:mt-2">{stats.pending}</p>
-              </div>
-              <div className="p-3 bg-yellow-50 rounded-2xl text-yellow-600">
-                <Clock className="w-6 h-6" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Processing</p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-1 sm:mt-2">{stats.processing}</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
-                <RefreshCw className="w-6 h-6" />
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-sm">
+            <div className="flex flex-col h-full justify-between">
+              <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Pending</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-yellow-600">{stats.pending}</p>
+                <div className="p-1.5 bg-yellow-50 rounded-xl text-yellow-600">
+                  <Clock className="w-4 h-4" />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Delivered</p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-green-600 mt-1 sm:mt-2">{stats.delivered}</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-2xl text-green-600">
-                <CheckCircle className="w-6 h-6" />
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-sm">
+            <div className="flex flex-col h-full justify-between">
+              <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Confirmed</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-teal-600">{stats.confirmed}</p>
+                <div className="p-1.5 bg-teal-50 rounded-xl text-teal-600">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 shadow-sm col-span-2 lg:col-span-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Revenue</p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-primary mt-1 sm:mt-2">₹{stats.revenue}</p>
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-sm">
+            <div className="flex flex-col h-full justify-between">
+              <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Processing</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-blue-600">{stats.processing}</p>
+                <div className="p-1.5 bg-blue-50 rounded-xl text-blue-600">
+                  <RefreshCw className="w-4 h-4" />
+                </div>
               </div>
-              <div className="p-3 bg-primary/5 rounded-2xl text-accent">
-                <TrendingUp className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-sm">
+            <div className="flex flex-col h-full justify-between">
+              <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Shipped</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-indigo-600">{stats.shipped}</p>
+                <div className="p-1.5 bg-indigo-50 rounded-xl text-indigo-600">
+                  <Package className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-sm">
+            <div className="flex flex-col h-full justify-between">
+              <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Delivered</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-green-600">{stats.delivered}</p>
+                <div className="p-1.5 bg-green-50 rounded-xl text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 shadow-sm col-span-2 md:col-span-1">
+            <div className="flex flex-col h-full justify-between">
+              <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Revenue</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-primary">₹{stats.revenue}</p>
+                <div className="p-1.5 bg-primary/5 rounded-xl text-accent">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
               </div>
             </div>
           </div>
@@ -449,7 +479,7 @@ const Admin = () => {
               </div>
               
               <div className="flex flex-wrap gap-1 bg-gray-50 p-1 border rounded-xl">
-                {['all', 'pending', 'processing', 'delivered', 'cancelled'].map((status) => (
+                {['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
                   <button
                     key={status}
                     onClick={() => setFilter(status)}
@@ -679,6 +709,80 @@ const Admin = () => {
                 </div>
               </div>
 
+              {/* Shipping Charge Management */}
+              <div className="border-t border-gray-100 pt-5 space-y-4">
+                <h4 className="font-bold text-sm text-primary uppercase tracking-wider">Shipping & Order Totals</h4>
+                <div className="grid md:grid-cols-2 gap-4 bg-[#fcfaf5] p-4 rounded-xl border border-gray-200/50">
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Products Subtotal:</span>
+                      <span className="font-bold text-gray-800">₹{
+                        selectedOrder.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || selectedOrder.subtotal || selectedOrder.total
+                      }</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Shipping Charge:</span>
+                      <span className={`font-bold ${selectedOrder.shippingCharge !== null && selectedOrder.shippingCharge !== undefined ? 'text-primary' : 'text-amber-600'}`}>
+                        {selectedOrder.shippingCharge !== null && selectedOrder.shippingCharge !== undefined ? `₹${selectedOrder.shippingCharge}` : 'Pending (Not Set)'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Form to update Shipping Charge */}
+                  <form 
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const form = e.target;
+                      const shippingInput = form.elements.shippingCharge;
+                      const chargeVal = parseFloat(shippingInput.value) || 0;
+                      const subtotal = selectedOrder.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || selectedOrder.subtotal || selectedOrder.total;
+                      
+                      try {
+                        const response = await fetch(`/api/orders/${selectedOrder.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ 
+                            shippingCharge: chargeVal,
+                            total: subtotal + chargeVal
+                          })
+                        });
+                        if (response.ok) {
+                          const updatedOrder = await response.json();
+                          fetchOrders();
+                          setSelectedOrder(updatedOrder);
+                          alert('Shipping charge and total updated successfully!');
+                        } else {
+                          alert('Failed to update shipping charge.');
+                        }
+                      } catch (err) {
+                        console.error('Error updating shipping charge:', err);
+                        alert('Error updating shipping charge.');
+                      }
+                    }}
+                    className="flex flex-col sm:flex-row gap-2 items-end justify-end"
+                  >
+                    <div className="w-full sm:w-auto flex-grow max-w-[180px]">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Set Shipping Charge (₹)</label>
+                      <input
+                        type="number"
+                        name="shippingCharge"
+                        min="0"
+                        defaultValue={selectedOrder.shippingCharge !== null && selectedOrder.shippingCharge !== undefined ? selectedOrder.shippingCharge : ''}
+                        placeholder="e.g. 50"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition bg-white"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full sm:w-auto bg-primary hover:bg-primaryDark text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm"
+                    >
+                      Update Charge
+                    </button>
+                  </form>
+                </div>
+              </div>
+
               {/* Total & Payment details */}
               <div className="flex items-center justify-between border-t border-gray-100 pt-4">
                 <div>
@@ -697,7 +801,7 @@ const Admin = () => {
               <div className="border-t border-gray-100 pt-5 space-y-3">
                 <h4 className="font-bold text-sm text-primary uppercase tracking-wider">Update Order Status</h4>
                 <div className="flex flex-wrap gap-2">
-                  {['pending', 'processing', 'delivered', 'cancelled'].map((status) => (
+                  {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
                     <button
                       key={status}
                       onClick={() => updateOrderStatus(selectedOrder.id, status)}
@@ -708,7 +812,8 @@ const Admin = () => {
                           : 'bg-white hover:bg-primary border-gray-200 hover:border-primary text-gray-700 hover:text-white shadow-sm'
                       }`}
                     >
-                      {status}
+                      {getStatusIcon(status)}
+                      <span className="capitalize">{status}</span>
                     </button>
                   ))}
                 </div>
