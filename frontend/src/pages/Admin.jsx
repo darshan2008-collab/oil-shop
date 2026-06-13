@@ -867,14 +867,14 @@ const Admin = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Category</label>
-                  <select
+                  <input
+                    type="text"
+                    required
                     value={newProductForm.category}
                     onChange={(e) => setNewProductForm(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition bg-white"
-                  >
-                    <option value="cooking">Cooking Oil</option>
-                    <option value="wellness">Wellness Oil</option>
-                  </select>
+                    placeholder="e.g. Cooking Oil"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Price (₹ / Liter)</label>
@@ -993,14 +993,14 @@ const Admin = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Category</label>
-                  <select
+                  <input
+                    type="text"
+                    required
                     value={editProductForm.category}
                     onChange={(e) => setEditProductForm(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition bg-white"
-                  >
-                    <option value="cooking">Cooking Oil</option>
-                    <option value="wellness">Wellness Oil</option>
-                  </select>
+                    placeholder="e.g. Cooking Oil"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Price (₹ / Liter)</label>
