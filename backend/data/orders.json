@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": 1,
+    "customer": {
+      "name": "darshan k",
+      "email": "darshan18052008@gmail.com",
+      "phone": "9942274565",
+      "address": "84/3 INDRA NAGAR SOUTHG GANDHIGRAMAM",
+      "city": "KARUR",
+      "state": "Tamil Nādu",
+      "zipCode": "639001",
+      "paymentMethod": "cod"
+    },
+    "items": [
+      {
+        "id": 2,
+        "name": "Groundnut Oil (கடலை எண்ணெய்)",
+        "tamilName": "கடலை எண்ணெய்",
+        "price": 380,
+        "description": "Natural antioxidants and essential nutrients.",
+        "image": "/images/groundnut-oil.png",
+        "category": "cooking",
+        "englishName": "Groundnut Oil",
+        "quantity": 1
+      }
+    ],
+    "total": 380,
+    "status": "pending",
+    "createdAt": "2026-06-11T15:36:32.174Z",
+    "updatedAt": "2026-06-11T15:36:32.174Z"
+  }
+]

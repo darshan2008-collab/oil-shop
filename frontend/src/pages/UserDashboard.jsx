@@ -28,53 +28,240 @@ const StatCard = ({ icon: Icon, label, value, sub, accent }) => (
   </div>
 );
 
-const OrderCard = ({ order }) => {
+const OrderTimeline = ({ currentStatus }) => {
+  const steps = [
+    { key: 'pending', label: 'Order Placed', desc: 'We have received your order' },
+    { key: 'processing', label: 'Processing', desc: 'Preparing your premium oils' },
+    { key: 'shipped', label: 'Shipped', desc: 'Your package is on the way' },
+    { key: 'delivered', label: 'Delivered', desc: 'Delivered to your doorstep' }
+  ];
+
+  if (currentStatus === 'cancelled') {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+        <XCircle className="w-8 h-8 text-red-600 mx-auto mb-2 animate-bounce" />
+        <h4 className="font-bold text-red-800 text-sm">Order Cancelled</h4>
+        <p className="text-xs text-red-600 mt-1">This order has been cancelled and will not be processed.</p>
+      </div>
+    );
+  }
+
+  const statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+  const currentIndex = statusOrder.indexOf(currentStatus);
+
+  return (
+    <div className="space-y-4">
+      <h4 className="font-bold text-sm text-primary uppercase tracking-wider">Tracking Status</h4>
+      <div className="relative pl-6 space-y-6 border-l-2 border-gray-200 ml-2.5">
+        {steps.map((step, index) => {
+          const isCompleted = index < currentIndex || currentStatus === 'delivered';
+          const isActive = index === currentIndex && currentStatus !== 'delivered';
+          
+          return (
+            <div key={step.key} className="relative">
+              {/* Indicator Dot */}
+              <div className={`absolute -left-[31px] top-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold z-10 transition-all duration-300 ${
+                isCompleted 
+                  ? 'bg-primary border-primary text-white'
+                  : isActive
+                  ? 'bg-accent border-accent text-white animate-pulse'
+                  : 'bg-white border-gray-300'
+              }`}>
+                {isCompleted && '✓'}
+                {isActive && '•'}
+              </div>
+              <div>
+                <p className={`text-sm font-semibold transition-colors duration-300 ${isCompleted || isActive ? 'text-primary' : 'text-gray-400'}`}>
+                  {step.label}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">{step.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const OrderDetailModal = ({ order, onClose, onCancelOrder }) => {
+  if (!order) return null;
+  const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
+  const total = order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || order.total || 0;
+  
+  const deliveryAddress = order.customer?.address || order.address;
+  const deliveryCity = order.customer?.city || (order.address?.city || '');
+  const deliveryState = order.customer?.state || (order.address?.state || '');
+  const deliveryZip = order.customer?.zipCode || (order.address?.zipCode || '');
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+        <div className="p-6 border-b border-gray-100 bg-white sticky top-0 z-10 flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold font-serif text-primary">Order #{order.id} Details & Tracking</h3>
+            <p className="text-xs text-gray-400 mt-1">Placed on {new Date(order.createdAt).toLocaleString()}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="px-3.5 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-500 font-semibold rounded-xl text-xs transition"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Timeline */}
+          <OrderTimeline currentStatus={order.status} />
+
+          {/* Delivery & Payment Details */}
+          <div className="bg-[#fcfaf5] border border-gray-200/50 rounded-xl p-5 space-y-3">
+            <h4 className="font-bold text-sm text-primary uppercase tracking-wider border-b pb-1 border-gray-200/30">Delivery Details</h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-gray-400">Recipient</p>
+                <p className="font-semibold text-gray-800">{order.customer?.name || order.name || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Phone</p>
+                <p className="font-semibold text-gray-800">{order.customer?.phone || order.phone || 'N/A'}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-xs text-gray-400">Shipping Address</p>
+                <p className="font-semibold text-gray-800 leading-relaxed">
+                  {deliveryAddress ? `${deliveryAddress}, ${deliveryCity}, ${deliveryState} - ${deliveryZip}` : 'No address specified'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Payment Mode</p>
+                <p className="font-semibold text-gray-800 capitalize">
+                  {order.customer?.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Order Status</p>
+                <span className={`inline-flex items-center space-x-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full border ${status.color}`}>
+                  <span>{status.label}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Items */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-primary uppercase tracking-wider">Order Items</h4>
+            <div className="space-y-2.5">
+              {order.items?.map((item, index) => (
+                <div key={index} className="flex items-center justify-between border border-gray-100 rounded-xl p-4 bg-white hover:bg-gray-50/50 transition">
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-12 h-12 bg-[#fcfaf5] rounded-lg border flex items-center justify-center p-1 flex-shrink-0">
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-full h-full object-contain" 
+                      />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800 text-sm">{item.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Quantity: {item.quantity} Liter</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-primary text-sm">₹{item.price * item.quantity}</p>
+                    <p className="text-[10px] text-gray-400">₹{item.price} / L</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Total */}
+          <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+            <span className="text-sm font-bold text-gray-500">Total Invoice</span>
+            <span className="text-2xl font-extrabold text-primary">₹{total.toLocaleString('en-IN')}</span>
+          </div>
+
+          {/* Actions */}
+          {order.status === 'pending' && (
+            <div className="border-t border-gray-100 pt-5 flex justify-end">
+              <button
+                onClick={() => onCancelOrder(order.id)}
+                className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 hover:text-red-700 px-5 py-2.5 rounded-xl font-bold text-sm transition"
+              >
+                Cancel Order
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OrderCard = ({ order, onViewDetails }) => {
   const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
   const StatusIcon = status.icon;
   const total = order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || order.total || 0;
 
+  const deliveryAddress = order.customer?.address || order.address;
+  const deliveryCity = order.customer?.city || (order.address?.city || '');
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition duration-300 space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Order #{order.id}</p>
-          <p className="text-sm font-semibold text-gray-700 mt-0.5">
-            {new Date(order.createdAt).toLocaleDateString('en-IN', {
-              day: 'numeric', month: 'short', year: 'numeric'
-            })}
-          </p>
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition duration-300 space-y-4 flex flex-col justify-between">
+      <div className="space-y-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Order #{order.id}</p>
+            <p className="text-sm font-semibold text-gray-700 mt-0.5">
+              {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'short', year: 'numeric'
+              })}
+            </p>
+          </div>
+          <span className={`inline-flex items-center space-x-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${status.color}`}>
+            <StatusIcon className="w-3 h-3" />
+            <span>{status.label}</span>
+          </span>
         </div>
-        <span className={`inline-flex items-center space-x-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${status.color}`}>
-          <StatusIcon className="w-3 h-3" />
-          <span>{status.label}</span>
-        </span>
-      </div>
 
-      {order.items && order.items.length > 0 && (
-        <div className="space-y-2 border-t border-gray-50 pt-3">
-          {order.items.slice(0, 2).map((item, i) => (
-            <div key={i} className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 truncate max-w-[200px]">{item.name}</span>
-              <span className="text-gray-500 text-xs flex-shrink-0 ml-2">x{item.quantity}</span>
-            </div>
-          ))}
-          {order.items.length > 2 && (
-            <p className="text-xs text-accent font-medium">+{order.items.length - 2} more items</p>
-          )}
-        </div>
-      )}
-
-      <div className="flex items-center justify-between border-t border-gray-50 pt-3">
-        <div>
-          <p className="text-xs text-gray-400">Total Amount</p>
-          <p className="text-base font-bold text-primary">₹{total.toLocaleString('en-IN')}</p>
-        </div>
-        {order.address && (
-          <div className="text-right">
-            <p className="text-xs text-gray-400">Delivery To</p>
-            <p className="text-xs font-medium text-gray-600 truncate max-w-[140px]">{order.address.city || order.address}</p>
+        {order.items && order.items.length > 0 && (
+          <div className="space-y-2 border-t border-gray-50 pt-3">
+            {order.items.slice(0, 2).map((item, i) => (
+              <div key={i} className="flex items-center justify-between text-sm">
+                <span className="text-gray-600 truncate max-w-[200px]">{item.name}</span>
+                <span className="text-gray-500 text-xs flex-shrink-0 ml-2">x{item.quantity}</span>
+              </div>
+            ))}
+            {order.items.length > 2 && (
+              <p className="text-xs text-accent font-medium">+{order.items.length - 2} more items</p>
+            )}
           </div>
         )}
+      </div>
+
+      <div className="space-y-3 pt-3 border-t border-gray-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-400">Total Amount</p>
+            <p className="text-base font-bold text-primary">₹{total.toLocaleString('en-IN')}</p>
+          </div>
+          {deliveryAddress && (
+            <div className="text-right">
+              <p className="text-xs text-gray-400">Delivery To</p>
+              <p className="text-xs font-medium text-gray-600 truncate max-w-[140px]">{deliveryCity || deliveryAddress}</p>
+            </div>
+          )}
+        </div>
+        
+        <div className="pt-2 border-t border-gray-50 flex justify-end">
+          <button
+            onClick={() => onViewDetails(order)}
+            className="inline-flex items-center space-x-1 text-xs font-bold text-accent hover:text-amber-700 transition"
+          >
+            <span>Track & View Details</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -101,6 +288,13 @@ const UserDashboard = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // Review states
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -117,7 +311,8 @@ const UserDashboard = () => {
         const myOrders  = allOrders.filter(o =>
           (o.username && o.username.toLowerCase() === user.username.toLowerCase()) ||
           (o.customerName && o.customerName.toLowerCase() === user.username.toLowerCase()) ||
-          (o.name && o.name.toLowerCase() === user.username.toLowerCase())
+          (o.name && o.name.toLowerCase() === user.username.toLowerCase()) ||
+          (o.customer?.name && o.customer.name.toLowerCase() === user.username.toLowerCase())
         );
         const myReviews = allReviews.filter(r =>
           r.username && r.username.toLowerCase() === user.username.toLowerCase()
@@ -133,6 +328,81 @@ const UserDashboard = () => {
     };
     fetchData();
   }, [user, navigate]);
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'cancelled' })
+      });
+      if (response.ok) {
+        // Refresh orders
+        const ordersRes = await fetch('/api/orders');
+        const allOrders = await ordersRes.json();
+        const myOrders  = allOrders.filter(o =>
+          (o.username && o.username.toLowerCase() === user.username.toLowerCase()) ||
+          (o.customerName && o.customerName.toLowerCase() === user.username.toLowerCase()) ||
+          (o.name && o.name.toLowerCase() === user.username.toLowerCase()) ||
+          (o.customer?.name && o.customer.name.toLowerCase() === user.username.toLowerCase())
+        );
+        setOrders(myOrders.reverse());
+        
+        // Update selected order modal if open
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder(prev => prev ? { ...prev, status: 'cancelled' } : null);
+        }
+        alert('Order cancelled successfully.');
+      } else {
+        alert('Failed to cancel order.');
+      }
+    } catch (err) {
+      console.error('Error cancelling order:', err);
+      alert('An error occurred. Please try again.');
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setSubmittingReview(true);
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: user.username,
+          rating: newRating,
+          comment: newComment
+        })
+      });
+      if (response.ok) {
+        // Refresh reviews
+        const reviewsRes = await fetch('/api/reviews');
+        const allReviews = await reviewsRes.json();
+        const myReviews = allReviews.filter(r =>
+          r.username && r.username.toLowerCase() === user.username.toLowerCase()
+        );
+        setReviews(myReviews.reverse());
+        setNewComment('');
+        setNewRating(5);
+        setShowReviewForm(false);
+        alert('Thank you! Your review has been submitted.');
+      } else {
+        alert('Failed to submit review. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit review. Please try again.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -313,7 +583,7 @@ const UserDashboard = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {orders.slice(0, 4).map(order => (
-                        <OrderCard key={order.id} order={order} />
+                        <OrderCard key={order.id} order={order} onViewDetails={setSelectedOrder} />
                       ))}
                     </div>
                   )}
@@ -366,7 +636,7 @@ const UserDashboard = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {orders.map(order => <OrderCard key={order.id} order={order} />)}
+                    {orders.map(order => <OrderCard key={order.id} order={order} onViewDetails={setSelectedOrder} />)}
                   </div>
                 )}
               </div>
@@ -379,14 +649,55 @@ const UserDashboard = () => {
                   <h3 className="text-lg font-bold font-serif text-primary">
                     My Reviews <span className="text-accent ml-1">({reviews.length})</span>
                   </h3>
-                  <Link
-                    to="/"
+                  <button
+                    onClick={() => setShowReviewForm(!showReviewForm)}
                     className="inline-flex items-center space-x-2 bg-primary hover:bg-primaryDark text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-sm"
                   >
-                    <Star className="w-3.5 h-3.5" />
-                    <span>Write a Review</span>
-                  </Link>
+                    <Star className="w-3.5 h-3.5 text-accent" />
+                    <span>{showReviewForm ? 'Cancel' : 'Write a Review'}</span>
+                  </button>
                 </div>
+
+                {showReviewForm && (
+                  <form onSubmit={handleReviewSubmit} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4 animate-in slide-in-from-top-4 duration-300">
+                    <h4 className="font-bold text-sm text-primary uppercase tracking-wider">Write Your Review</h4>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 font-sans">Rating</label>
+                      <div className="flex items-center space-x-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setNewRating(star)}
+                            className="p-1 hover:scale-110 transition"
+                          >
+                            <Star className={`w-6 h-6 ${star <= newRating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 font-sans">Your Comments</label>
+                      <textarea
+                        required
+                        rows="3"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Tell us what you think of our cold-pressed oils..."
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition resize-none font-sans"
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={submittingReview}
+                        className="bg-primary hover:bg-primaryDark text-white px-6 py-2.5 rounded-xl font-bold text-sm transition disabled:opacity-50"
+                      >
+                        {submittingReview ? 'Submitting...' : 'Submit Review'}
+                      </button>
+                    </div>
+                  </form>
+                )}
 
                 {reviews.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center space-y-4 shadow-sm">
@@ -395,10 +706,10 @@ const UserDashboard = () => {
                     </div>
                     <h4 className="text-xl font-bold font-serif text-primary">No reviews yet</h4>
                     <p className="text-sm text-gray-500 max-w-xs mx-auto">Share your experience with our premium oils and help others discover the goodness of nature.</p>
-                    <Link to="/" className="inline-flex items-center space-x-2 bg-primary hover:bg-primaryDark text-white px-6 py-3 rounded-xl font-semibold text-sm transition shadow-md">
+                    <button onClick={() => setShowReviewForm(true)} className="inline-flex items-center space-x-2 bg-primary hover:bg-primaryDark text-white px-6 py-3 rounded-xl font-semibold text-sm transition shadow-md">
                       <span>Write a Review</span>
                       <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    </button>
                   </div>
                 ) : (
                   <>
@@ -428,6 +739,15 @@ const UserDashboard = () => {
           </>
         )}
       </div>
+
+      {/* Order Detail & Tracking Modal */}
+      {selectedOrder && (
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onCancelOrder={handleCancelOrder}
+        />
+      )}
     </div>
   );
 };

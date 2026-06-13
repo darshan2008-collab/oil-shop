@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { CreditCard, Truck, User, Phone, MapPin, ArrowLeft } from 'lucide-react';
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -58,6 +60,7 @@ ${itemsList}
     setLoading(true);
 
     const orderData = {
+      username: user?.username || '',
       customer: formData,
       items: cart,
       total: cartTotal
