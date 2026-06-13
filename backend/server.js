@@ -151,7 +151,7 @@ app.post('/api/products', (req, res) => {
 // Update a product
 app.put('/api/products/:id', (req, res) => {
   const products = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8'));
-  const productIndex = products.findIndex(p => p.id === parseInt(req.params.id));
+  const productIndex = products.findIndex(p => String(p.id) === String(req.params.id));
   if (productIndex !== -1) {
     products[productIndex] = {
       ...products[productIndex],
@@ -179,7 +179,7 @@ app.put('/api/products/:id', (req, res) => {
 // Delete a product
 app.delete('/api/products/:id', (req, res) => {
   const products = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8'));
-  const productIndex = products.findIndex(p => p.id === parseInt(req.params.id));
+  const productIndex = products.findIndex(p => String(p.id) === String(req.params.id));
   if (productIndex !== -1) {
     const deletedProduct = products.splice(productIndex, 1);
     fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2));
@@ -225,7 +225,7 @@ app.get('/api/orders/user/:username', (req, res) => {
 // Get order by ID
 app.get('/api/orders/:id', (req, res) => {
   const orders = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-  const order = orders.find(o => o.id === parseInt(req.params.id));
+  const order = orders.find(o => String(o.id) === String(req.params.id));
   if (order) {
     res.json(order);
   } else {
@@ -236,7 +236,7 @@ app.get('/api/orders/:id', (req, res) => {
 // Update order status
 app.put('/api/orders/:id', (req, res) => {
   const orders = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-  const orderIndex = orders.findIndex(o => o.id === parseInt(req.params.id));
+  const orderIndex = orders.findIndex(o => String(o.id) === String(req.params.id));
   if (orderIndex !== -1) {
     orders[orderIndex] = {
       ...orders[orderIndex],
@@ -253,7 +253,7 @@ app.put('/api/orders/:id', (req, res) => {
 // Delete order
 app.delete('/api/orders/:id', (req, res) => {
   const orders = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-  const orderIndex = orders.findIndex(o => o.id === parseInt(req.params.id));
+  const orderIndex = orders.findIndex(o => String(o.id) === String(req.params.id));
   if (orderIndex !== -1) {
     orders.splice(orderIndex, 1);
     fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));

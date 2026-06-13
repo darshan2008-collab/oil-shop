@@ -255,6 +255,8 @@ const Admin = () => {
         fetchOrders();
         setSelectedOrder(null);
         alert('Order deleted successfully');
+      } else {
+        alert('Failed to delete order');
       }
     } catch (error) {
       console.error('Error deleting order:', error);
