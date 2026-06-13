@@ -16,9 +16,11 @@ import {
   Package,
   Upload
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Admin = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,13 +49,16 @@ const Admin = () => {
   });
 
   useEffect(() => {
+    if (user && user.role === 'admin') {
+      localStorage.setItem('isAdminLoggedIn', 'true');
+    }
     if (!localStorage.getItem('isAdminLoggedIn')) {
       navigate('/admin/login');
       return;
     }
     fetchOrders();
     fetchProducts();
-  }, [navigate]);
+  }, [user, navigate]);
 
   const fetchProducts = async () => {
     try {

@@ -12,7 +12,7 @@ A complete e-commerce website for Swasthya Pure Cooking Oils with ordering syste
 - **Order Success**: Confirmation page after successful order placement
 
 ### Admin Features
-- **Admin Login**: Secure login with credentials (admin/admin123)
+- **Admin Login**: Secure login with credentials (vijay/vijay@2026)
 - **Dashboard**: Overview with order statistics (total, pending, processing, delivered, revenue)
 - **Order Management**: View all orders, filter by status, update order status, delete orders
 - **Order Details**: View detailed order information including customer details and items
@@ -136,8 +136,8 @@ npm run dev
 ### Admin Flow
 1. Navigate to http://localhost:3000/admin/login
 2. Login with credentials:
-   - Username: `admin`
-   - Password: `admin123`
+   - Username: `vijay`
+   - Password: `vijay@2026`
 3. View dashboard with order statistics
 4. Manage orders:
    - View all orders

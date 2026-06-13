@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = parseInt(process.env.PORT, 10) || 5000;
+const PORT = parseInt(process.env.PORT, 10) || 5002;
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 
 // Middleware
@@ -28,8 +28,40 @@ if (!fs.existsSync(DATA_DIR)) {
 if (!fs.existsSync(ORDERS_FILE)) {
   fs.writeFileSync(ORDERS_FILE, JSON.stringify([], null, 2));
 }
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2));
+// Initialize users.json and seed default admins if not exists
+let users = [];
+if (fs.existsSync(USERS_FILE)) {
+  try {
+    users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  } catch (e) {
+    users = [];
+  }
+}
+
+const defaultAdmins = [
+  { username: 'vijay', password: process.env.VITE_ADMIN_PASSWORD || 'vijay@oil#2026' },
+  { username: 'vinayaka', password: 'vinayaka#123' }
+];
+
+let updated = false;
+defaultAdmins.forEach(admin => {
+  const exists = users.some(u => u.username.toLowerCase() === admin.username.toLowerCase());
+  if (!exists) {
+    const obscuredPassword = Buffer.from(admin.password).toString('base64');
+    users.push({
+      id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+      username: admin.username,
+      password: obscuredPassword,
+      role: 'admin',
+      createdAt: new Date().toISOString()
+    });
+    updated = true;
+    console.log(`Admin user seeded: ${admin.username}`);
+  }
+});
+
+if (updated) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 }
 if (!fs.existsSync(REVIEWS_FILE)) {
   fs.writeFileSync(REVIEWS_FILE, JSON.stringify([], null, 2));
@@ -259,7 +291,7 @@ app.post('/api/reviews', (req, res) => {
 
 // Register
 app.post('/api/auth/register', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, role } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
@@ -274,12 +306,13 @@ app.post('/api/auth/register', (req, res) => {
     id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
     username,
     password: obscuredPassword,
+    role: role || 'user',
     createdAt: new Date().toISOString()
   };
   users.push(newUser);
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
   
-  res.json({ status: 'success', username: newUser.username });
+  res.json({ status: 'success', username: newUser.username, role: newUser.role });
 });
 
 // Login
@@ -299,7 +332,7 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
   
-  res.json({ status: 'success', username: user.username });
+  res.json({ status: 'success', username: user.username, role: user.role || 'user' });
 });
 
 app.listen(PORT, () => {

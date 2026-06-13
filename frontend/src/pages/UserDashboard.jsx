@@ -298,6 +298,11 @@ const UserDashboard = () => {
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
+    if (user.role === 'admin') {
+      localStorage.setItem('isAdminLoggedIn', 'true');
+      navigate('/admin', { replace: true });
+      return;
+    }
     const fetchData = async () => {
       try {
         const [ordersRes, reviewsRes] = await Promise.all([

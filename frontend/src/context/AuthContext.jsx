@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
       throw new Error(data.error || 'Login failed');
     }
 
-    const userObj = { username: data.username };
+    const userObj = { username: data.username, role: data.role || 'user' };
     localStorage.setItem('currentUser', JSON.stringify(userObj));
     setUser(userObj);
     return userObj;
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     // Auto-login after registration
-    const userObj = { username: data.username };
+    const userObj = { username: data.username, role: data.role || 'user' };
     localStorage.setItem('currentUser', JSON.stringify(userObj));
     setUser(userObj);
     return userObj;

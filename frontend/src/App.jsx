@@ -26,48 +26,57 @@ const PublicRoute = ({ children }) => {
   return !user ? children : <Navigate to="/" replace />;
 };
 
+function AppContent() {
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {!isAdminPath && <Header />}
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/login" element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } />
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/cart" element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          } />
+          <Route path="/checkout" element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          } />
+          <Route path="/order-success/:id" element={
+            <ProtectedRoute>
+              <OrderSuccess />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <UserDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </main>
+      {!isAdminPath && <Footer />}
+    </div>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/login" element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                } />
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/cart" element={
-                  <ProtectedRoute>
-                    <Cart />
-                  </ProtectedRoute>
-                } />
-                <Route path="/checkout" element={
-                  <ProtectedRoute>
-                    <Checkout />
-                  </ProtectedRoute>
-                } />
-                <Route path="/order-success/:id" element={
-                  <ProtectedRoute>
-                    <OrderSuccess />
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <UserDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin" element={<Admin />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <AppContent />
         </BrowserRouter>
       </CartProvider>
     </AuthProvider>

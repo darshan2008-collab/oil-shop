@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, User as UserIcon, LogIn, UserPlus, Sparkles, ShieldCheck } from 'lucide-react';
+import { Lock, User as UserIcon, LogIn, UserPlus, Sparkles, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +16,8 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -27,6 +29,8 @@ const Login = () => {
   const handleToggleMode = () => {
     setIsLoginMode(!isLoginMode);
     setError('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     setFormData({
       username: '',
       password: '',
@@ -54,10 +58,16 @@ const Login = () => {
     }
 
     try {
+      let loggedInUser;
       if (isLoginMode) {
-        await login(username.trim(), password);
+        loggedInUser = await login(username.trim(), password);
       } else {
-        await register(username.trim(), password);
+        loggedInUser = await register(username.trim(), password);
+      }
+      if (loggedInUser && loggedInUser.role === 'admin') {
+        localStorage.setItem('isAdminLoggedIn', 'true');
+        navigate('/admin', { replace: true });
+        return;
       }
       const from = location.state?.from?.pathname || '/';
       navigate(from, { replace: true });
@@ -159,14 +169,22 @@ const Login = () => {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition focus:outline-none bg-cream/30"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition focus:outline-none bg-cream/30"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition focus:outline-none"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -179,14 +197,22 @@ const Login = () => {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
                     placeholder="Confirm your password"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition focus:outline-none bg-cream/30"
+                    className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition focus:outline-none bg-cream/30"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition focus:outline-none"
+                    title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             )}
@@ -207,6 +233,8 @@ const Login = () => {
               </>
             )}
           </button>
+
+
         </form>
 
         {/* Footer Guarantee info */}
